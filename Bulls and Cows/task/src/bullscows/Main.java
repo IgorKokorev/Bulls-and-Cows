@@ -14,47 +14,61 @@ public class Main {
     public static void main(String[] args) {
 
         createGuessed();
-//        playGame();
+        System.out.println("Okay, let's start a game!");
+        playGame();
 
     }
 
     private static void playGame() {
-
-        String input = scanner.nextLine();
-
-        Pattern p = Pattern.compile("[0-9]{" + len + "}");
-        if (!p.matcher(input).matches()) {
-            System.out.println("Wrong input!");
-            return;
-        }
-
         int bulls = 0;
         int cows = 0;
+        int turn = 1;
+        Pattern p = Pattern.compile("[0-9]{" + len + "}");
+        String input;
 
-        for (int i = 0; i < len; i++) {
-            if (input.charAt(i) == guessed.get(i)) bulls++;
-            else if (guessed.contains(input.charAt(i))) cows++;
-        }
+        do {
+            System.out.println("Turn " + turn++ + ":");
+
+            while (true) {
+                input = scanner.nextLine();
+                if (!p.matcher(input).matches()) {
+                    System.out.println("Wrong input!");
+                } else break;
+            }
+
+            bulls = 0;
+            cows = 0;
+            for (int i = 0; i < len; i++) {
+                if (input.charAt(i) == guessed.get(i)) bulls++;
+                else if (guessed.contains(input.charAt(i))) cows++;
+            }
+
+            printGrade(bulls, cows);
+
+        } while (bulls < len);
+        System.out.println("Congratulations! You guessed the secret code.");
+    }
+
+    private static void printGrade(int bulls, int cows) {
 
         System.out.print("Grade: ");
-        if (cows == 0 && bulls == 0) System.out.print("None. ");
-        else if (cows == 0) System.out.print(bulls + " bull(s). ");
-        else if (bulls == 0) System.out.print(cows + " cow(s). ");
-        else System.out.print(bulls + " bull(s) and " + cows + " cow(s). ");
-        System.out.print("The secret code is ");
-        printGuessed();
-        System.out.println();
+        if (cows == 0 && bulls == 0) System.out.println("None");
+        else if (cows == 0) System.out.println(bulls + " bull(s)");
+        else if (bulls == 0) System.out.println(cows + " cow(s)");
+        else System.out.println(bulls + " bull(s) and " + cows + " cow(s)");
     }
 
     private static void createGuessed() {
         ArrayList<Character> digits = new ArrayList<>(List.of('0', '1', '2', '3', '4', '5', '6', '7', '8', '9'));
         Random rng = new Random();
 
-        len = scanner.nextInt();
-        if (len < 1 || len > 10) {
-            System.out.println("Error: can't generate a secret number with a length of " +
-                    len + " because there aren't enough unique digits.");
-            return;
+        System.out.println("Please, enter the secret code's length:");
+        while (true) {
+            len = scanner.nextInt();
+            if (len < 1 || len > 10) {
+                System.out.println("Error: can't generate a secret number with a length of " +
+                        len + " because there aren't enough unique digits.");
+            } else break;
         }
 
         int index = rng.nextInt(digits.size() - 1);
@@ -66,7 +80,7 @@ public class Main {
             digits.remove(index);
         }
 
-        System.out.println("The random secret number is " + guessedToString() + ".");
+//        System.out.println("The random secret number is " + guessedToString() + ".");
     }
 
     static void printGuessed() {
@@ -75,7 +89,7 @@ public class Main {
 
     static String guessedToString() {
         StringBuilder sb = new StringBuilder();
-        for (char ch: guessed) sb.append(ch);
+        for (char ch : guessed) sb.append(ch);
         return sb.toString();
     }
 }
