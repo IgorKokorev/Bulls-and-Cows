@@ -8,32 +8,37 @@ import java.util.regex.Pattern;
 
 public class Main {
     static int len = 4;
+    static int numSymbols = 10;
     static List<Character> guessed = new ArrayList<>();
+    static List<Character> permitted;
     static Scanner scanner = new Scanner(System.in);
 
     public static void main(String[] args) {
 
-        createGuessed();
-        System.out.println("Okay, let's start a game!");
-        playGame();
-
+        if (createGuessed()) {
+            System.out.println("Okay, let's start a game!");
+            playGame();
+        }
     }
 
     private static void playGame() {
         int bulls = 0;
         int cows = 0;
         int turn = 1;
-        Pattern p = Pattern.compile("[0-9]{" + len + "}");
+
+        String pattern;
+        if (numSymbols < 11) pattern = "0-" + (numSymbols - 1);
+        else pattern = "0-9a-" + permitted.get(numSymbols - 1);
+        Pattern p = Pattern.compile("[" + pattern + "]{" + len + "}");
         String input;
 
         do {
             System.out.println("Turn " + turn++ + ":");
 
-            while (true) {
-                input = scanner.nextLine();
-                if (!p.matcher(input).matches()) {
-                    System.out.println("Wrong input!");
-                } else break;
+            input = scanner.nextLine();
+            if (!p.matcher(input).matches()) {
+                System.out.println("Error: Wrong input!");
+                return;
             }
 
             bulls = 0;
@@ -58,38 +63,58 @@ public class Main {
         else System.out.println(bulls + " bull(s) and " + cows + " cow(s)");
     }
 
-    private static void createGuessed() {
-        ArrayList<Character> digits = new ArrayList<>(List.of('0', '1', '2', '3', '4', '5', '6', '7', '8', '9'));
+    private static boolean createGuessed() {
+        ArrayList<Character> digits = new ArrayList<>(List.of('0', '1', '2', '3', '4', '5',
+                '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+                'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'));
         Random rng = new Random();
 
-        System.out.println("Please, enter the secret code's length:");
-        while (true) {
-            len = scanner.nextInt();
-            if (len < 1 || len > 10) {
-                System.out.println("Error: can't generate a secret number with a length of " +
-                        len + " because there aren't enough unique digits.");
-            } else break;
+        System.out.println("Input the length of the secret code:");
+        try {
+            len = Integer.parseInt(scanner.nextLine());
+        } catch (NumberFormatException e) {
+            System.out.println("Error: not a number.");
+            return false;
+        }
+        if (len < 1 || len > 36) {
+            System.out.println("Error: can't generate a secret number with a length of " +
+                    len + " because there aren't enough unique digits.");
+            return false;
         }
 
-        int index = rng.nextInt(digits.size() - 1);
-        guessed.add(digits.get(index + 1));
-        digits.remove(index + 1);
-        for (int i = 1; i < len; i++) {
-            index = rng.nextInt(digits.size());
-            guessed.add(digits.get(index));
-            digits.remove(index);
+        System.out.println("Input the number of possible symbols in the code:");
+        try {
+            numSymbols = Integer.parseInt(scanner.nextLine());
+        } catch (NumberFormatException e) {
+            System.out.println("Error: not a number.");
+            return false;
+        }
+        if (numSymbols < len || numSymbols > 36) {
+            System.out.println("Error: number of symbols should be not less " +
+                    "than the length of the code and not more than 36.");
+            return false;
         }
 
-//        System.out.println("The random secret number is " + guessedToString() + ".");
-    }
+        permitted = digits.subList(0, numSymbols);
+        ArrayList<Character> copy = new ArrayList<>(permitted);
 
-    static void printGuessed() {
-        guessed.forEach(System.out::print);
-    }
+        int index;
+        for (int i = 0; i < len; i++) {
+            index = rng.nextInt(copy.size());
+            guessed.add(copy.get(index));
+            copy.remove(index);
+        }
 
-    static String guessedToString() {
-        StringBuilder sb = new StringBuilder();
-        for (char ch : guessed) sb.append(ch);
-        return sb.toString();
+        System.out.print("The secret is prepared: ");
+        for (int i = 0; i < len; i++) System.out.print("*");
+        System.out.print(" (0-");
+        if (numSymbols < 11) {
+            System.out.print(numSymbols - 1);
+        } else {
+            System.out.print("9, a");
+            if (numSymbols > 11) System.out.print("-" + permitted.get(numSymbols - 1));
+        }
+        System.out.println(").");
+        return true;
     }
 }
